@@ -381,7 +381,7 @@
 
   <!-- JAVASCRIPT LOGIC CLIENT-SIDE FETCH API -->
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxnKYAy0glQCBKXBgKgDtw_ZB_Wi8bacoipHTOO9EBU7iP-uctp6ri4W4uDO8QQh58cBg/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyQfS-BhgnpRbg5t3YuWUONC9Ir9m89oFnmlgP5x-yH7MCV7df3lEWCUnEtv2ajvOk64g/exec";
 
     let appData = { siswa: [], settings: {}, nilai: [], listMapel: [], listKelas: [] };
     let myProgressionChart = null;
@@ -519,98 +519,105 @@
     }
 
     function renderNilaiTable() {
-      const tbody = document.getElementById('tblNilaiBody');
-      const cardContainer = document.getElementById('containerCardView');
-      tbody.innerHTML = '';
-      cardContainer.innerHTML = '';
+  const tbody = document.getElementById('tblNilaiBody');
+  const cardContainer = document.getElementById('containerCardView');
+  tbody.innerHTML = '';
+  cardContainer.innerHTML = '';
 
-      const currentMapel = document.getElementById('filterMapel').value || (appData.listMapel[0] || 'Informatika');
-      const currentKelas = document.getElementById('filterKelas').value || (appData.listKelas[0] || '7A');
-      const currentSem = document.getElementById('filterSemester').value || 'Ganjil';
+  const currentMapel = (document.getElementById('filterMapel').value || (appData.listMapel[0] || 'Informatika')).trim();
+  const currentKelas = (document.getElementById('filterKelas').value || (appData.listKelas[0] || '7A')).trim();
+  const currentSem = (document.getElementById('filterSemester').value || 'Ganjil').trim();
 
-      document.getElementById('lblActiveMapel').innerText = currentMapel;
-      document.getElementById('lblActiveKelas').innerText = currentKelas;
+  document.getElementById('lblActiveMapel').innerText = currentMapel;
+  document.getElementById('lblActiveKelas').innerText = currentKelas;
 
-      const filteredSiswa = appData.siswa.filter(s => s.kelas === currentKelas);
+  const filteredSiswa = appData.siswa.filter(s => String(s.kelas).trim() === currentKelas);
 
-      if (filteredSiswa.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="25" class="p-4 text-center text-slate-400 font-medium">Belum ada santri terdaftar di Kelas ${currentKelas}.</td></tr>`;
-        cardContainer.innerHTML = `<div class="p-4 text-center text-slate-400 font-medium">Belum ada santri terdaftar di Kelas ${currentKelas}.</div>`;
-        return;
-      }
+  if (filteredSiswa.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="25" class="p-4 text-center text-slate-400 font-medium">Belum ada santri terdaftar di Kelas ${currentKelas}.</td></tr>`;
+    cardContainer.innerHTML = `<div class="p-4 text-center text-slate-400 font-medium">Belum ada santri terdaftar di Kelas ${currentKelas}.</div>`;
+    return;
+  }
 
-      filteredSiswa.forEach((s, idx) => {
-        const existing = appData.nilai.find(n => n.idSiswa === s.id && n.mapel === currentMapel && n.semester === currentSem) || {};
-        const pVals = existing.p || Array(8).fill('');
-        const kVals = existing.k || Array(8).fill('');
+  filteredSiswa.forEach((s, idx) => {
+    // PENCOCOKAN PRESISI: ID, Mapel, Kelas, dan Semester dengan Trim String
+    const existing = appData.nilai.find(n => 
+      String(n.idSiswa).trim() === String(s.id).trim() && 
+      String(n.mapel).trim() === currentMapel && 
+      String(n.kelas).trim() === currentKelas && 
+      String(n.semester).trim() === currentSem
+    ) || {};
 
-        // RENDER MODE TABEL
-        let pInputs = '';
-        for(let i=0; i<8; i++) {
-          pInputs += `<td class="border p-0.5"><input type="number" min="0" max="100" class="w-full text-center text-xs py-1 px-0.5 outline-none font-semibold focus:bg-indigo-50 p-val-${s.id}" value="${pVals[i] !== undefined && pVals[i] !== null ? pVals[i] : ''}" oninput="calcRow('${s.id}')"></td>`;
-        }
+    const pVals = existing.p || Array(8).fill('');
+    const kVals = existing.k || Array(8).fill('');
 
-        let kInputs = '';
-        for(let i=0; i<8; i++) {
-          kInputs += `<td class="border p-0.5"><input type="number" min="0" max="100" class="w-full text-center text-xs py-1 px-0.5 outline-none font-semibold focus:bg-teal-50 k-val-${s.id}" value="${kVals[i] !== undefined && kVals[i] !== null ? kVals[i] : ''}" oninput="calcRow('${s.id}')"></td>`;
-        }
-
-        tbody.innerHTML += `
-          <tr class="hover:bg-slate-50 border-b text-center" id="row-${s.id}">
-            <td class="border p-2 sticky-col font-medium">${idx + 1}</td>
-            <td class="border p-2 sticky-col-2 text-left font-semibold text-slate-800">${s.nama}</td>
-            <td class="border p-2">${s.gender}</td>
-            ${pInputs}${kInputs}
-            <td class="border p-1 bg-indigo-50 font-bold" id="rataP-${s.id}">${existing.rataP || '0'}</td>
-            <td class="border p-1 bg-teal-50 font-bold" id="rataK-${s.id}">${existing.rataK || '0'}</td>
-            <td class="border p-0.5 min-w-[45px]"><input type="number" min="0" max="100" id="uts-${s.id}" class="w-full text-center text-xs py-1 px-0.5 outline-none font-bold" value="${existing.uts !== undefined && existing.uts !== null ? existing.uts : ''}" oninput="calcRow('${s.id}')"></td>
-            <td class="border p-0.5 min-w-[45px]"><input type="number" min="0" max="100" id="uap-${s.id}" class="w-full text-center text-xs py-1 px-0.5 outline-none font-bold" value="${existing.uap !== undefined && existing.uap !== null ? existing.uap : ''}" oninput="calcRow('${s.id}')"></td>
-            <td class="border p-1 bg-amber-100 font-extrabold text-indigo-900" id="raport-${s.id}">${existing.nilaiRaport || '0'}</td>
-            <td class="border p-1 bg-amber-200 font-extrabold" id="predikat-${s.id}">${existing.predikat || '-'}</td>
-          </tr>
-        `;
-
-        // RENDER MODE KARTU MOBILE
-        let pInputsCard = '';
-        for(let i=0; i<8; i++) {
-          pInputsCard += `<input type="number" min="0" max="100" placeholder="P${i+1}" class="border rounded p-1 text-center text-xs outline-none p-val-card-${s.id}" value="${pVals[i] !== undefined && pVals[i] !== null ? pVals[i] : ''}" oninput="syncCardToTable('${s.id}', ${i}, 'p')">`;
-        }
-
-        let kInputsCard = '';
-        for(let i=0; i<8; i++) {
-          kInputsCard += `<input type="number" min="0" max="100" placeholder="K${i+1}" class="border rounded p-1 text-center text-xs outline-none k-val-card-${s.id}" value="${kVals[i] !== undefined && kVals[i] !== null ? kVals[i] : ''}" oninput="syncCardToTable('${s.id}', ${i}, 'k')">`;
-        }
-
-        cardContainer.innerHTML += `
-          <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
-            <div class="flex justify-between items-center border-b pb-2">
-              <span class="font-bold text-slate-800 text-xs">${idx + 1}. ${s.nama} (${s.gender})</span>
-              <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-indigo-900">Rapor: <b id="raport-card-${s.id}">${existing.nilaiRaport || '0'}</b> (<b id="predikat-card-${s.id}">${existing.predikat || '-'}</b>)</span>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-indigo-700 uppercase mb-1">Nilai Pengetahuan (P1 - P8)</p>
-              <div class="grid grid-cols-4 gap-1.5">${pInputsCard}</div>
-            </div>
-            <div>
-              <p class="text-[10px] font-bold text-teal-700 uppercase mb-1">Nilai Keterampilan (K1 - K8)</p>
-              <div class="grid grid-cols-4 gap-1.5">${kInputsCard}</div>
-            </div>
-            <div class="grid grid-cols-2 gap-2 pt-1 border-t">
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500">Nilai UTS</label>
-                <input type="number" min="0" max="100" id="uts-card-${s.id}" class="w-full border rounded p-1 text-center text-xs font-bold" value="${existing.uts !== undefined && existing.uts !== null ? existing.uts : ''}" oninput="syncCardToTable('${s.id}', 0, 'uts')">
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500">Nilai UAP</label>
-                <input type="number" min="0" max="100" id="uap-card-${s.id}" class="w-full border rounded p-1 text-center text-xs font-bold" value="${existing.uap !== undefined && existing.uap !== null ? existing.uap : ''}" oninput="syncCardToTable('${s.id}', 0, 'uap')">
-              </div>
-            </div>
-          </div>
-        `;
-
-        calcRow(s.id);
-      });
+    // RENDER TABEL DESKTOP
+    let pInputs = '';
+    for(let i=0; i<8; i++) {
+      pInputs += `<td class="border p-0.5"><input type="number" min="0" max="100" class="w-full text-center text-xs py-1 px-0.5 outline-none font-semibold focus:bg-indigo-50 p-val-${s.id}" value="${pVals[i] !== undefined && pVals[i] !== null ? pVals[i] : ''}" oninput="calcRow('${s.id}')"></td>`;
     }
+
+    let kInputs = '';
+    for(let i=0; i<8; i++) {
+      kInputs += `<td class="border p-0.5"><input type="number" min="0" max="100" class="w-full text-center text-xs py-1 px-0.5 outline-none font-semibold focus:bg-teal-50 k-val-${s.id}" value="${kVals[i] !== undefined && kVals[i] !== null ? kVals[i] : ''}" oninput="calcRow('${s.id}')"></td>`;
+    }
+
+    tbody.innerHTML += `
+      <tr class="hover:bg-slate-50 border-b text-center" id="row-${s.id}">
+        <td class="border p-2 sticky-col font-medium">${idx + 1}</td>
+        <td class="border p-2 sticky-col-2 text-left font-semibold text-slate-800">${s.nama}</td>
+        <td class="border p-2">${s.gender}</td>
+        ${pInputs}${kInputs}
+        <td class="border p-1 bg-indigo-50 font-bold" id="rataP-${s.id}">${existing.rataP || '0'}</td>
+        <td class="border p-1 bg-teal-50 font-bold" id="rataK-${s.id}">${existing.rataK || '0'}</td>
+        <td class="border p-0.5 min-w-[45px]"><input type="number" min="0" max="100" id="uts-${s.id}" class="w-full text-center text-xs py-1 px-0.5 outline-none font-bold" value="${existing.uts !== undefined && existing.uts !== null ? existing.uts : ''}" oninput="calcRow('${s.id}')"></td>
+        <td class="border p-0.5 min-w-[45px]"><input type="number" min="0" max="100" id="uap-${s.id}" class="w-full text-center text-xs py-1 px-0.5 outline-none font-bold" value="${existing.uap !== undefined && existing.uap !== null ? existing.uap : ''}" oninput="calcRow('${s.id}')"></td>
+        <td class="border p-1 bg-amber-100 font-extrabold text-indigo-900" id="raport-${s.id}">${existing.nilaiRaport || '0'}</td>
+        <td class="border p-1 bg-amber-200 font-extrabold" id="predikat-${s.id}">${existing.predikat || '-'}</td>
+      </tr>
+    `;
+
+    // RENDER KARTU MOBILE
+    let pInputsCard = '';
+    for(let i=0; i<8; i++) {
+      pInputsCard += `<input type="number" min="0" max="100" placeholder="P${i+1}" class="border rounded p-1 text-center text-xs outline-none p-val-card-${s.id}" value="${pVals[i] !== undefined && pVals[i] !== null ? pVals[i] : ''}" oninput="syncCardToTable('${s.id}', ${i}, 'p')">`;
+    }
+
+    let kInputsCard = '';
+    for(let i=0; i<8; i++) {
+      kInputsCard += `<input type="number" min="0" max="100" placeholder="K${i+1}" class="border rounded p-1 text-center text-xs outline-none k-val-card-${s.id}" value="${kVals[i] !== undefined && kVals[i] !== null ? kVals[i] : ''}" oninput="syncCardToTable('${s.id}', ${i}, 'k')">`;
+    }
+
+    cardContainer.innerHTML += `
+      <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
+        <div class="flex justify-between items-center border-b pb-2">
+          <span class="font-bold text-slate-800 text-xs">${idx + 1}. ${s.nama} (${s.gender})</span>
+          <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-indigo-900">Rapor: <b id="raport-card-${s.id}">${existing.nilaiRaport || '0'}</b> (<b id="predikat-card-${s.id}">${existing.predikat || '-'}</b>)</span>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-indigo-700 uppercase mb-1">Nilai Pengetahuan (P1 - P8)</p>
+          <div class="grid grid-cols-4 gap-1.5">${pInputsCard}</div>
+        </div>
+        <div>
+          <p class="text-[10px] font-bold text-teal-700 uppercase mb-1">Nilai Keterampilan (K1 - K8)</p>
+          <div class="grid grid-cols-4 gap-1.5">${kInputsCard}</div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 pt-1 border-t">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500">Nilai UTS</label>
+            <input type="number" min="0" max="100" id="uts-card-${s.id}" class="w-full border rounded p-1 text-center text-xs font-bold" value="${existing.uts !== undefined && existing.uts !== null ? existing.uts : ''}" oninput="syncCardToTable('${s.id}', 0, 'uts')">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-500">Nilai UAP</label>
+            <input type="number" min="0" max="100" id="uap-card-${s.id}" class="w-full border rounded p-1 text-center text-xs font-bold" value="${existing.uap !== undefined && existing.uap !== null ? existing.uap : ''}" oninput="syncCardToTable('${s.id}', 0, 'uap')">
+          </div>
+        </div>
+      </div>
+    `;
+
+    calcRow(s.id);
+  });
+}
 
     function syncCardToTable(studentId, idx, type) {
       if (type === 'p') {
@@ -682,44 +689,76 @@
     }
 
     function saveAllGradesToServer() {
-  const currentMapel = document.getElementById('filterMapel').value;
-  const currentKelas = document.getElementById('filterKelas').value;
-  const currentSem = document.getElementById('filterSemester').value;
+  const currentMapel = (document.getElementById('filterMapel').value || '').trim();
+  const currentKelas = (document.getElementById('filterKelas').value || '').trim();
+  const currentSem = (document.getElementById('filterSemester').value || '').trim();
 
-  const filteredSiswa = appData.siswa.filter(s => s.kelas === currentKelas);
+  const filteredSiswa = appData.siswa.filter(s => String(s.kelas).trim() === currentKelas);
 
   let gradesPayload = [];
   filteredSiswa.forEach(s => {
     let pVals = [], kVals = [];
-    document.querySelectorAll(`.p-val-${s.id}`).forEach(el => pVals.push(el.value));
-    document.querySelectorAll(`.k-val-${s.id}`).forEach(el => kVals.push(el.value));
 
-    let utsVal = document.getElementById(`uts-${s.id}`)?.value || '';
-    let uapVal = document.getElementById(`uap-${s.id}`)?.value || '';
+    // BACA INPUT LANGSUNG DARI MODE KARTU ATAU MODE TABEL BERDASARKAN TAMPILAN AKTIF
+    if (isCardView) {
+      document.querySelectorAll(`.p-val-card-${s.id}`).forEach(el => pVals.push(el.value));
+      document.querySelectorAll(`.k-val-card-${s.id}`).forEach(el => kVals.push(el.value));
+    } else {
+      document.querySelectorAll(`.p-val-${s.id}`).forEach(el => pVals.push(el.value));
+      document.querySelectorAll(`.k-val-${s.id}`).forEach(el => kVals.push(el.value));
+    }
 
-    // Check apakah santri memiliki minimal 1 nilai yang terisi
+    let utsVal = isCardView ? (document.getElementById(`uts-card-${s.id}`)?.value || '') : (document.getElementById(`uts-${s.id}`)?.value || '');
+    let uapVal = isCardView ? (document.getElementById(`uap-card-${s.id}`)?.value || '') : (document.getElementById(`uap-${s.id}`)?.value || '');
+
+    // PERIKSA ADA TIDAKNYA NILAI
     let hasAnyValue = pVals.some(v => v !== '' && v !== null && v !== undefined) || 
                       kVals.some(v => v !== '' && v !== null && v !== undefined) || 
-                      utsVal !== '' || 
-                      uapVal !== '';
+                      (utsVal !== '' && utsVal !== null) || 
+                      (uapVal !== '' && uapVal !== null);
 
-    // Hanya masukkan ke payload jika ada nilai yang diisi
     if (hasAnyValue) {
+      // HITUNG NIKAI DENGAN PRESISI
+      let pSum = 0, pCount = 0;
+      pVals.forEach(v => { let n = parseFloat(v); if(!isNaN(n)){ pSum += n; pCount++; } });
+      let rataP = pCount > 0 ? (pSum / pCount).toFixed(1) : '0';
+
+      let kSum = 0, kCount = 0;
+      kVals.forEach(v => { let n = parseFloat(v); if(!isNaN(n)){ kSum += n; kCount++; } });
+      let rataK = kCount > 0 ? (kSum / kCount).toFixed(1) : '0';
+
+      let numUTS = parseFloat(utsVal) || 0;
+      let numUAP = parseFloat(uapVal) || 0;
+      let numRataP = parseFloat(rataP) || 0;
+      let numRataK = parseFloat(rataK) || 0;
+
+      let bP = (parseFloat(appData.settings.bobotP) || 30) / 100;
+      let bK = (parseFloat(appData.settings.bobotK) || 30) / 100;
+      let bUTS = (parseFloat(appData.settings.bobotUTS) || 20) / 100;
+      let bUAP = (parseFloat(appData.settings.bobotUAP) || 20) / 100;
+
+      let totalNilai = (numRataP * bP) + (numRataK * bK) + (numUTS * bUTS) + (numUAP * bUAP);
+      let roundedRaport = Math.round(totalNilai);
+
+      let predikat = 'D';
+      if (roundedRaport >= 90) predikat = 'A';
+      else if (roundedRaport >= 80) predikat = 'B';
+      else if (roundedRaport >= 70) predikat = 'C';
+
       gradesPayload.push({
         idSiswa: s.id,
         p: pVals,
         k: kVals,
-        rataP: document.getElementById(`rataP-${s.id}`)?.innerText || '0',
-        rataK: document.getElementById(`rataK-${s.id}`)?.innerText || '0',
+        rataP: rataP,
+        rataK: rataK,
         uts: utsVal,
         uap: uapVal,
-        nilaiRaport: document.getElementById(`raport-${s.id}`)?.innerText || '0',
-        predikat: document.getElementById(`predikat-${s.id}`)?.innerText || '-'
+        nilaiRaport: String(roundedRaport),
+        predikat: predikat
       });
     }
   });
 
-  // Cegah pengiriman request jika tidak ada satu pun nilai yang diisi
   if (gradesPayload.length === 0) {
     alert("Tidak ada nilai yang diisi! Silakan masukkan minimal satu nilai santri terlebih dahulu.");
     return;
