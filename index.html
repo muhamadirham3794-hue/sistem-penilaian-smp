@@ -381,7 +381,7 @@
 
   <!-- JAVASCRIPT LOGIC CLIENT-SIDE FETCH API -->
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbwiLmpzCYQQN5J371TUDVkync1E1hNkAanSnXRG_1q_V12K6wChWqm-gdGPaZu8PQl-sg/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzOD2jiITwSVm-SW5crK7Wbp1fHUvEU7UcP4KcoVgoUA7Q3qW4lYxJ8MJMrYM4E4oGldQ/exec";
 
     let appData = { siswa: [], settings: {}, nilai: [], listMapel: [], listKelas: [] };
     let myProgressionChart = null;
@@ -814,60 +814,72 @@
     }
 
     function renderProgressionChart(idSiswa) {
-      const semesters = ['7 Ganjil', '7 Genap', '8 Ganjil', '8 Genap', '9 Ganjil', '9 Genap'];
-      const allSiswaNilai = appData.nilai.filter(n => n.idSiswa === idSiswa);
+  const semesters = ['7 Ganjil', '7 Genap', '8 Ganjil', '8 Genap', '9 Ganjil', '9 Genap'];
+  const allSiswaNilai = appData.nilai.filter(n => String(n.idSiswa) === String(idSiswa));
 
-      const selectedMapel = document.getElementById('selectMapelChart') ? document.getElementById('selectMapelChart').value : 'ALL';
+  const selectedMapel = document.getElementById('selectMapelChart') ? document.getElementById('selectMapelChart').value : 'ALL';
 
-      let chartData = semesters.map(semLabel => {
-        let matchSem = semLabel.includes('Ganjil') ? 'Ganjil' : 'Genap';
-        let matchKelas = semLabel.split(' ')[0];
+  let chartData = semesters.map(semLabel => {
+    let parts = semLabel.split(' ');
+    let matchKelasTingkat = parts[0]; // '7', '8', atau '9'
+    let matchSem = parts[1];          // 'Ganjil' atau 'Genap'
 
-        let relevantGrades = allSiswaNilai.filter(n => {
-          let semMatch = n.semester === matchSem;
-          let kelasMatch = String(n.kelas).startsWith(matchKelas);
-          let mapelMatch = (selectedMapel === 'ALL') || (n.mapel === selectedMapel);
-          return semMatch && kelasMatch && mapelMatch;
-        });
+    let relevantGrades = allSiswaNilai.filter(n => {
+      let semMatch = String(n.semester) === matchSem;
+      let kelasMatch = String(n.kelas).startsWith(matchKelasTingkat); // Cocokkan kelas 7, 8, atau 9
+      let mapelMatch = (selectedMapel === 'ALL') || (String(n.mapel) === String(selectedMapel));
+      return semMatch && kelasMatch && mapelMatch;
+    });
 
-        if (relevantGrades.length === 0) return null;
+    if (relevantGrades.length === 0) return null;
 
-        let total = 0;
-        relevantGrades.forEach(g => { total += parseFloat(g.nilaiRaport) || 0; });
-        return Math.round(total / relevantGrades.length);
-      });
+    let total = 0;
+    relevantGrades.forEach(g => { total += parseFloat(g.nilaiRaport) || 0; });
+    return Math.round(total / relevantGrades.length);
+  });
 
-      const labelMapelText = selectedMapel === 'ALL' ? 'Rata-Rata Seluruh Mapel' : `Nilai ${selectedMapel}`;
+  const labelMapelText = selectedMapel === 'ALL' ? 'Rata-Rata Seluruh Mapel' : `Nilai ${selectedMapel}`;
 
-      const ctx = document.getElementById('chartProgression').getContext('2d');
-      if (myProgressionChart) myProgressionChart.destroy();
+  const ctx = document.getElementById('chartProgression').getContext('2d');
+  if (myProgressionChart) myProgressionChart.destroy();
 
-      myProgressionChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: semesters,
-          datasets: [{
-            label: labelMapelText,
-            data: chartData,
-            borderColor: '#059669',
-            backgroundColor: 'rgba(5, 150, 105, 0.1)',
-            borderWidth: 2.5,
-            fill: true,
-            tension: 0.3,
-            pointRadius: 5,
-            pointBackgroundColor: '#047857'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: { min: 0, max: 100, title: { display: true, text: 'Nilai Raport' } },
-            x: { title: { display: true, text: 'Tingkat Kelas & Semester' } }
+  myProgressionChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: semesters,
+      datasets: [{
+        label: labelMapelText,
+        data: chartData,
+        borderColor: '#4f46e5',
+        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.3,
+        spanGaps: true, // Menghubungkan titik garis jika ada semester yang kosong
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        pointBackgroundColor: '#4f46e5'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.raw !== null ? ` Nilai Rapor: ${context.raw}` : ' Belum ada nilai';
+            }
           }
         }
-      });
+      },
+      scales: {
+        y: { min: 0, max: 100, title: { display: true, text: 'Nilai Rapor' } },
+        x: { title: { display: true, text: 'Tingkat Kelas & Semester' } }
+      }
     }
+  });
+}
 
     function handleSaveStudent(e) {
       e.preventDefault();
