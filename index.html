@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Penilaian Siswa - SMP Al-Fathonah Arjasari</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Aplikasi Penilaian Siswa - SMP Al-Fathonah</title>
   <!-- Tailwind CSS, FontAwesome, & Chart.js -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -14,71 +14,52 @@
       -webkit-overflow-scrolling: touch;
     }
     .sticky-col { position: sticky; left: 0; background-color: #fff; z-index: 10; }
-    .sticky-col-2 { position: sticky; left: 45px; background-color: #fff; z-index: 10; }
+    .sticky-col-2 { position: sticky; left: 40px; background-color: #fff; z-index: 10; }
 
     input[type=number]::-webkit-inner-spin-button, 
     input[type=number]::-webkit-outer-spin-button { 
       -webkit-appearance: none; 
       margin: 0; 
     }
-    input[type=number] {
-      -moz-appearance: textfield;
-    }
+    input[type=number] { -moz-appearance: textfield; }
 
     @media print {
       header, nav, #tab-raporSiswa > div:first-child,
-      #tab-dashboard, #tab-inputNilai, #tab-grafikSiswa, #tab-pengaturan {
+      #tab-dashboard, #tab-inputNilai, #tab-grafikSiswa, #tab-pengaturan, .no-print {
         display: none !important;
       }
-      body {
-        background-color: #fff !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        color: #000 !important;
-      }
-      main {
-        padding: 0 !important;
-        margin: 0 !important;
-        max-width: 100% !important;
-      }
-      #tab-raporSiswa {
-        display: block !important;
-      }
-      #reportCard {
-        border: none !important;
-        box-shadow: none !important;
-        padding: 10mm 5mm !important;
-        margin: 0 !important;
-        width: 100% !important;
-      }
-      table {
-        width: 100% !important;
-        border-collapse: collapse !important;
-      }
-      th, td {
-        border: 1px solid #000 !important;
-        color: #000 !important;
-      }
+      body { background-color: #fff !important; padding: 0 !important; margin: 0 !important; }
+      main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+      #tab-raporSiswa { display: block !important; }
+      #reportCard { border: none !important; box-shadow: none !important; padding: 5mm !important; }
+      table { width: 100% !important; border-collapse: collapse !important; }
+      th, td { border: 1px solid #000 !important; color: #000 !important; }
     }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans pb-20 md:pb-6">
+<body class="bg-slate-100 text-slate-800 font-sans pb-24 md:pb-6">
 
-  <!-- Header Navigasi -->
-  <header class="bg-indigo-900 text-white shadow-lg sticky top-0 z-50">
+  <!-- OVERLAY LOADING -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/60 z-[100] flex flex-col items-center justify-center text-white hidden">
+    <i class="fa-solid fa-spinner fa-spin text-4xl text-amber-400 mb-3"></i>
+    <p class="text-sm font-semibold tracking-wide" id="loadingText">Memproses data...</p>
+  </div>
+
+  <!-- HEADER NAVIGASI -->
+  <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3">
-        <i class="fa-solid fa-graduation-cap text-2xl text-yellow-400"></i>
+        <i class="fa-solid fa-graduation-cap text-2xl text-amber-400"></i>
         <div>
-          <h1 class="font-bold text-base md:text-lg leading-tight" id="headerTitle">SMP AL-FATHONAH ARJASARI</h1>
-          <p class="text-xs text-indigo-200">Sistem Transkrip Penilaian Santri</p>
+          <h1 class="font-bold text-sm md:text-lg leading-tight" id="headerTitle">SMP AL-FATHONAH ARJASARI</h1>
+          <p class="text-[10px] md:text-xs text-indigo-200">Sistem Transkrip Penilaian Santri</p>
         </div>
       </div>
       <div class="hidden md:flex space-x-2">
         <button onclick="switchTab('dashboard')" class="px-3 py-1.5 rounded-lg hover:bg-indigo-800 text-sm font-medium"><i class="fa-solid fa-chart-pie mr-1"></i> Dashboard</button>
         <button onclick="switchTab('inputNilai')" class="px-3 py-1.5 rounded-lg hover:bg-indigo-800 text-sm font-medium"><i class="fa-solid fa-pen-to-square mr-1"></i> Input Nilai</button>
         <button onclick="switchTab('raporSiswa')" class="px-3 py-1.5 rounded-lg hover:bg-indigo-800 text-sm font-medium"><i class="fa-solid fa-file-invoice mr-1"></i> Rapor Siswa</button>
-        <button onclick="switchTab('grafikSiswa')" class="px-3 py-1.5 rounded-lg hover:bg-indigo-800 text-sm font-medium"><i class="fa-solid fa-chart-line mr-1"></i> Grafik Perkembangan</button>
+        <button onclick="switchTab('grafikSiswa')" class="px-3 py-1.5 rounded-lg hover:bg-indigo-800 text-sm font-medium"><i class="fa-solid fa-chart-line mr-1"></i> Grafik</button>
         <button onclick="switchTab('pengaturan')" class="px-3 py-1.5 rounded-lg hover:bg-indigo-800 text-sm font-medium"><i class="fa-solid fa-gear mr-1"></i> Pengaturan</button>
       </div>
     </div>
@@ -87,60 +68,65 @@
   <main class="max-w-7xl mx-auto p-3 md:p-6">
 
     <!-- TAB 1: DASHBOARD -->
-    <section id="tab-dashboard" class="space-y-6">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-indigo-600">
-          <p class="text-xs text-slate-500 font-semibold">TOTAL SANTRI</p>
-          <h3 class="text-2xl font-bold text-indigo-900 mt-1" id="countSiswa">0</h3>
+    <section id="tab-dashboard" class="space-y-5">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="bg-white p-3.5 rounded-xl shadow-sm border-l-4 border-indigo-600">
+          <p class="text-[10px] text-slate-500 font-bold uppercase">Total Santri</p>
+          <h3 class="text-xl md:text-2xl font-bold text-indigo-900 mt-0.5" id="countSiswa">0</h3>
         </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-emerald-500">
-          <p class="text-xs text-slate-500 font-semibold">KELAS AKTIF</p>
-          <h3 class="text-2xl font-bold text-emerald-900 mt-1" id="countKelasAktif">0 Kelas</h3>
-          <p class="text-[11px] text-slate-400 mt-0.5 truncate" id="lblDaftarKelas">-</p>
+        <div class="bg-white p-3.5 rounded-xl shadow-sm border-l-4 border-emerald-500">
+          <p class="text-[10px] text-slate-500 font-bold uppercase">Kelas Aktif</p>
+          <h3 class="text-xl md:text-2xl font-bold text-emerald-900 mt-0.5" id="countKelasAktif">0 Kelas</h3>
+          <p class="text-[10px] text-slate-400 truncate" id="lblDaftarKelas">-</p>
         </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-amber-500">
-          <p class="text-xs text-slate-500 font-semibold">TAHUN PELAJARAN</p>
-          <h3 class="text-xl font-bold text-amber-900 mt-1" id="dashTahun">2025-2026</h3>
+        <div class="bg-white p-3.5 rounded-xl shadow-sm border-l-4 border-amber-500">
+          <p class="text-[10px] text-slate-500 font-bold uppercase">Tahun Ajaran</p>
+          <h3 class="text-base md:text-xl font-bold text-amber-900 mt-0.5" id="dashTahun">2025-2026</h3>
         </div>
-        <div class="bg-white p-4 rounded-xl shadow-sm border-l-4 border-rose-500">
-          <p class="text-xs text-slate-500 font-semibold">MATA PELAJARAN</p>
-          <h3 class="text-2xl font-bold text-rose-900 mt-1" id="countMapel">0</h3>
+        <div class="bg-white p-3.5 rounded-xl shadow-sm border-l-4 border-rose-500">
+          <p class="text-[10px] text-slate-500 font-bold uppercase">Mata Pelajaran</p>
+          <h3 class="text-xl md:text-2xl font-bold text-rose-900 mt-0.5" id="countMapel">0</h3>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-          <h3 class="font-bold text-indigo-900 mb-4 flex items-center"><i class="fa-solid fa-user-plus mr-2"></i> Tambah Data Santri</h3>
-          <form id="formSiswa" onsubmit="handleSaveStudent(event)" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <h3 class="font-bold text-indigo-900 mb-3 text-sm flex items-center"><i class="fa-solid fa-user-plus mr-2 text-indigo-600"></i> Tambah Data Santri</h3>
+          <form id="formSiswa" onsubmit="handleSaveStudent(event)" class="space-y-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Santri Lengkap</label>
+              <label class="block text-xs font-medium text-slate-600 mb-1">Nama Santri Lengkap</label>
               <input type="text" id="siswaNama" required class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Contoh: Abdurrahman Farih">
             </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Jenis Kelamin</label>
-              <select id="siswaGender" class="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none">
-                <option value="L">Laki-Laki (L)</option>
-                <option value="P">Perempuan (P)</option>
-              </select>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Jenis Kelamin</label>
+                <select id="siswaGender" class="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none">
+                  <option value="L">Laki-Laki (L)</option>
+                  <option value="P">Perempuan (P)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Pilih Kelas</label>
+                <select id="siswaKelas" class="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none">
+                </select>
+              </div>
             </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Kelas</label>
-              <select id="siswaKelas" class="w-full px-3 py-2 border rounded-lg text-sm bg-white outline-none">
-              </select>
-            </div>
-            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-lg text-sm transition shadow">
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-xs md:text-sm transition shadow">
               <i class="fa-solid fa-save mr-1"></i> Simpan Santri
             </button>
           </form>
         </div>
 
-        <div class="md:col-span-2 bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-          <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold text-indigo-900 flex items-center"><i class="fa-solid fa-users mr-2"></i> Daftar Santri Terdaftar</h3>
-            <span class="text-xs text-slate-400">Total: <b id="lblTotalSiswa">0</b></span>
+        <div class="md:col-span-2 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
+            <h3 class="font-bold text-indigo-900 text-sm flex items-center"><i class="fa-solid fa-users mr-2 text-indigo-600"></i> Daftar Santri Terdaftar</h3>
+            <div class="w-full sm:w-auto flex items-center gap-2">
+              <input type="text" id="searchSiswa" oninput="renderSiswaTable()" placeholder="Cari nama santri..." class="px-2.5 py-1.5 border rounded-lg text-xs w-full sm:w-48 outline-none focus:ring-1 focus:ring-indigo-500">
+              <span class="text-xs text-slate-400 whitespace-nowrap">Total: <b id="lblTotalSiswa">0</b></span>
+            </div>
           </div>
-          <div class="overflow-y-auto max-h-80">
-            <table class="w-full text-xs md:text-sm text-left border-collapse">
+          <div class="overflow-y-auto max-h-72 border rounded-lg">
+            <table class="w-full text-xs text-left border-collapse">
               <thead class="bg-slate-100 text-slate-600 sticky top-0">
                 <tr>
                   <th class="p-2 border text-center">No</th>
@@ -148,6 +134,7 @@
                   <th class="p-2 border">Nama Santri</th>
                   <th class="p-2 border text-center">L/P</th>
                   <th class="p-2 border text-center">Kelas</th>
+                  <th class="p-2 border text-center">Aksi</th>
                 </tr>
               </thead>
               <tbody id="tblSiswaBody"></tbody>
@@ -159,144 +146,140 @@
 
     <!-- TAB 2: INPUT NILAI -->
     <section id="tab-inputNilai" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
-            <div class="flex-1 md:flex-none">
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Mata Pelajaran:</label>
-              <select id="filterMapel" onchange="renderNilaiTable()" class="w-full md:w-56 px-3 py-1.5 border rounded-lg text-xs font-bold bg-white text-indigo-900 border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none">
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Kelas:</label>
-              <select id="filterKelas" onchange="renderNilaiTable()" class="px-3 py-1.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Semester:</label>
-              <select id="filterSemester" onchange="renderNilaiTable()" class="px-3 py-1.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
-                <option value="Ganjil">Ganjil</option>
-                <option value="Genap">Genap</option>
-              </select>
-            </div>
+      <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 space-y-3">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Mata Pelajaran</label>
+            <select id="filterMapel" onchange="renderNilaiTable()" class="w-full px-2.5 py-1.5 border rounded-lg text-xs font-bold bg-white text-indigo-900 border-indigo-200 outline-none">
+            </select>
           </div>
-
-          <button onclick="saveAllGradesToServer()" class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2 rounded-lg text-xs md:text-sm flex items-center justify-center shadow transition">
-            <i class="fa-solid fa-floppy-disk mr-2"></i> Simpan Nilai Ke Rapor
-          </button>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Kelas</label>
+            <select id="filterKelas" onchange="renderNilaiTable()" class="w-full px-2.5 py-1.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Semester</label>
+            <select id="filterSemester" onchange="renderNilaiTable()" class="w-full px-2.5 py-1.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
+              <option value="Ganjil">Ganjil</option>
+              <option value="Genap">Genap</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Tampilan</label>
+            <button type="button" onclick="toggleInputView()" id="btnToggleView" class="w-full px-2 py-1.5 bg-slate-100 border border-slate-300 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-200 transition">
+              <i class="fa-solid fa-list-check mr-1"></i> Mode Kartu
+            </button>
+          </div>
         </div>
       </div>
 
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="p-3 bg-slate-50 border-b flex justify-between items-center">
-          <h2 class="text-xs md:text-sm font-bold text-slate-700 uppercase tracking-wider" id="tabelTitle">
-            TRANSKIP NILAI SMP AL-FATHONAH ARJASARI TAHUN PELAJARAN 2025-2026
+          <h2 class="text-xs font-bold text-slate-700 uppercase" id="tabelTitle">
+            TRANSKRIP NILAI
           </h2>
-          <span class="text-[10px] md:text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-1 rounded">
-            Mapel: <span id="lblActiveMapel">Informatika</span> | Kelas: <span id="lblActiveKelas">7A</span>
+          <span class="text-[10px] md:text-xs bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded">
+            <span id="lblActiveMapel">Informatika</span> | Kelas <span id="lblActiveKelas">7A</span>
           </span>
         </div>
 
-        <div class="table-scroll">
+        <!-- CONTAINER TABEL (DESKTOP) -->
+        <div id="containerTableView" class="table-scroll">
           <table class="w-full text-xs border-collapse border border-slate-300">
             <thead>
               <tr class="bg-slate-100 text-center font-bold text-slate-700">
-                <th rowspan="2" class="border border-slate-300 p-2 sticky-col w-10">No.</th>
-                <th rowspan="2" class="border border-slate-300 p-2 sticky-col-2 min-w-[180px]">NAMA SANTRI</th>
-                <th rowspan="2" class="border border-slate-300 p-2 w-10">L/P</th>
-                <th colspan="8" class="border border-slate-300 p-1 bg-indigo-50 text-indigo-900">Penilaian Pengetahuan</th>
-                <th colspan="8" class="border border-slate-300 p-1 bg-teal-50 text-teal-900">Penilaian Keterampilan</th>
-                <th rowspan="2" class="border border-slate-300 p-1 bg-indigo-100 min-w-[55px]">Rata2 Nilai P</th>
-                <th rowspan="2" class="border border-slate-300 p-1 bg-teal-100 min-w-[55px]">Rata2 Nilai K</th>
-                <th rowspan="2" class="border border-slate-300 p-1 min-w-[50px]">UTS</th>
-                <th rowspan="2" class="border border-slate-300 p-1 min-w-[50px]">UAP</th>
-                <th rowspan="2" class="border border-slate-300 p-1 bg-yellow-100 font-extrabold min-w-[60px]">Nilai Raport</th>
-                <th rowspan="2" class="border border-slate-300 p-1 bg-yellow-200 font-extrabold min-w-[55px]">Predikat</th>
+                <th rowspan="2" class="border p-2 sticky-col w-8">No</th>
+                <th rowspan="2" class="border p-2 sticky-col-2 min-w-[150px]">NAMA SANTRI</th>
+                <th rowspan="2" class="border p-2 w-8">L/P</th>
+                <th colspan="8" class="border p-1 bg-indigo-50 text-indigo-900">Pengetahuan (P)</th>
+                <th colspan="8" class="border p-1 bg-teal-50 text-teal-900">Keterampilan (K)</th>
+                <th rowspan="2" class="border p-1 bg-indigo-100 min-w-[45px]">Rata P</th>
+                <th rowspan="2" class="border p-1 bg-teal-100 min-w-[45px]">Rata K</th>
+                <th rowspan="2" class="border p-1 min-w-[45px]">UTS</th>
+                <th rowspan="2" class="border p-1 min-w-[45px]">UAP</th>
+                <th rowspan="2" class="border p-1 bg-amber-100 font-bold min-w-[50px]">Rapor</th>
+                <th rowspan="2" class="border p-1 bg-amber-200 font-bold min-w-[40px]">Pred</th>
               </tr>
               <tr class="bg-slate-50 text-center font-bold">
-                <th class="border border-slate-300 p-1 min-w-[42px]">P1</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">P2</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">P3</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">P4</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">P5</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">P6</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">P7</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">P8</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">K1</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">K2</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">K3</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">K4</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">K5</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">K6</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">K7</th>
-                <th class="border border-slate-300 p-1 min-w-[42px]">K8</th>
+                <th class="border p-1 min-w-[38px]">P1</th><th class="border p-1 min-w-[38px]">P2</th><th class="border p-1 min-w-[38px]">P3</th><th class="border p-1 min-w-[38px]">P4</th>
+                <th class="border p-1 min-w-[38px]">P5</th><th class="border p-1 min-w-[38px]">P6</th><th class="border p-1 min-w-[38px]">P7</th><th class="border p-1 min-w-[38px]">P8</th>
+                <th class="border p-1 min-w-[38px]">K1</th><th class="border p-1 min-w-[38px]">K2</th><th class="border p-1 min-w-[38px]">K3</th><th class="border p-1 min-w-[38px]">K4</th>
+                <th class="border p-1 min-w-[38px]">K5</th><th class="border p-1 min-w-[38px]">K6</th><th class="border p-1 min-w-[38px]">K7</th><th class="border p-1 min-w-[38px]">K8</th>
               </tr>
             </thead>
             <tbody id="tblNilaiBody"></tbody>
           </table>
         </div>
+
+        <!-- CONTAINER KARTU MOBILE (HP) -->
+        <div id="containerCardView" class="p-3 space-y-4 hidden bg-slate-50"></div>
       </div>
     </section>
 
+    <!-- FLOATING ACTION BUTTON (SIMPAN NILAI HP) -->
+    <button onclick="saveAllGradesToServer()" id="fabSaveGrades" class="fixed bottom-16 right-4 md:bottom-6 md:right-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-3 rounded-full shadow-lg z-30 flex items-center gap-2 transition text-xs md:text-sm">
+      <i class="fa-solid fa-floppy-disk text-base"></i> <span class="hidden sm:inline">Simpan Semua Nilai</span><span class="sm:hidden">Simpan</span>
+    </button>
+
     <!-- TAB 3: RAPOR SISWA -->
-    <section id="tab-raporSiswa" class="hidden space-y-6">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Filter Kelas:</label>
-              <select id="filterKelasRapor" onchange="onFilterKelasRaporChange()" class="px-3 py-1.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
-              </select>
-            </div>
-            <div class="flex-1 md:flex-none">
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Pilih Santri:</label>
-              <select id="selectSiswaReport" onchange="renderIndividualReport()" class="w-full md:w-64 px-3 py-1.5 border rounded-lg text-xs md:text-sm font-semibold bg-white border-slate-300 outline-none">
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Semester Rapor:</label>
-              <select id="filterSemesterRapor" onchange="renderIndividualReport()" class="px-3 py-1.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
+    <section id="tab-raporSiswa" class="hidden space-y-5">
+      <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 no-print">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Filter Kelas</label>
+            <select id="filterKelasRapor" onchange="onFilterKelasRaporChange()" class="w-full px-3 py-1.5 border rounded-lg text-xs font-bold bg-white outline-none">
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Pilih Santri</label>
+            <select id="selectSiswaReport" onchange="renderIndividualReport()" class="w-full px-3 py-1.5 border rounded-lg text-xs font-semibold bg-white outline-none">
+            </select>
+          </div>
+          <div class="flex gap-2">
+            <div class="flex-1">
+              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Semester</label>
+              <select id="filterSemesterRapor" onchange="renderIndividualReport()" class="w-full px-3 py-1.5 border rounded-lg text-xs font-bold bg-white outline-none">
                 <option value="Ganjil">Ganjil</option>
                 <option value="Genap">Genap</option>
               </select>
             </div>
+            <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold shadow flex items-center justify-center self-end h-[34px]">
+              <i class="fa-solid fa-print mr-1"></i> Cetak
+            </button>
           </div>
-
-          <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-xs md:text-sm font-semibold shadow">
-            <i class="fa-solid fa-print mr-1"></i> Cetak Rapor
-          </button>
         </div>
       </div>
 
-      <div id="reportCard" class="bg-white p-6 md:p-8 rounded-xl shadow-md border border-slate-200 space-y-6">
-        <div class="text-center border-b pb-4">
-          <h2 class="text-lg md:text-xl font-extrabold text-slate-800" id="repSekolah">SMP AL-FATHONAH ARJASARI</h2>
-          <h3 class="text-sm md:text-md font-semibold text-indigo-700 uppercase tracking-wide">TRANSKRIP HASIL PENILAIAN SANTRI</h3>
-          <p class="text-xs text-slate-500">Tahun Pelajaran <span id="repTahun">2025-2026</span></p>
+      <div id="reportCard" class="bg-white p-5 md:p-8 rounded-xl shadow-md border border-slate-200 space-y-4">
+        <div class="text-center border-b pb-3">
+          <h2 class="text-base md:text-xl font-extrabold text-slate-800" id="repSekolah">SMP AL-FATHONAH ARJASARI</h2>
+          <h3 class="text-xs md:text-sm font-bold text-indigo-700 uppercase tracking-wide">TRANSKRIP HASIL PENILAIAN SANTRI</h3>
+          <p class="text-[11px] text-slate-500">Tahun Pelajaran <span id="repTahun">2025-2026</span></p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 text-xs md:text-sm">
+        <div class="grid grid-cols-2 gap-2 text-xs">
           <div>
-            <p><span class="font-semibold text-slate-500">Nama Santri:</span> <span id="repNama" class="font-bold text-slate-800">-</span></p>
-            <p><span class="font-semibold text-slate-500">Jenis Kelamin:</span> <span id="repGender" class="font-bold text-slate-800">-</span></p>
+            <p><span class="text-slate-500">Nama:</span> <b id="repNama" class="text-slate-800">-</b></p>
+            <p><span class="text-slate-500">Gender:</span> <b id="repGender" class="text-slate-800">-</b></p>
           </div>
           <div class="text-right">
-            <p><span class="font-semibold text-slate-500">Kelas:</span> <span id="repKelas" class="font-bold text-slate-800">-</span></p>
-            <p><span class="font-semibold text-slate-500">Semester:</span> <span id="repSemester" class="font-bold text-slate-800">Ganjil</span></p>
+            <p><span class="text-slate-500">Kelas:</span> <b id="repKelas" class="text-slate-800">-</b></p>
+            <p><span class="text-slate-500">Semester:</span> <b id="repSemester" class="text-slate-800">Ganjil</b></p>
           </div>
         </div>
 
         <div class="overflow-x-auto">
-          <table class="w-full text-xs md:text-sm border-collapse border border-slate-300">
+          <table class="w-full text-xs border-collapse border border-slate-300">
             <thead class="bg-slate-100 text-slate-700 font-bold">
               <tr>
-                <th class="border border-slate-300 p-2">Mata Pelajaran</th>
-                <th class="border border-slate-300 p-2 text-center">Rata2 P</th>
-                <th class="border border-slate-300 p-2 text-center">Rata2 K</th>
-                <th class="border border-slate-300 p-2 text-center">UTS</th>
-                <th class="border border-slate-300 p-2 text-center">UAP</th>
-                <th class="border border-slate-300 p-2 text-center bg-indigo-50">Nilai Raport</th>
-                <th class="border border-slate-300 p-2 text-center bg-yellow-50">Predikat</th>
+                <th class="border p-2">Mata Pelajaran</th>
+                <th class="border p-2 text-center">Rata P</th>
+                <th class="border p-2 text-center">Rata K</th>
+                <th class="border p-2 text-center">UTS</th>
+                <th class="border p-2 text-center">UAP</th>
+                <th class="border p-2 text-center bg-indigo-50">Nilai Rapor</th>
+                <th class="border p-2 text-center bg-amber-50">Predikat</th>
               </tr>
             </thead>
             <tbody id="repNilaiBody"></tbody>
@@ -305,38 +288,33 @@
       </div>
     </section>
 
-    <!-- TAB 4: GRAFIK PERKEMBANGAN -->
-    <section id="tab-grafikSiswa" class="hidden space-y-6">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Filter Kelas:</label>
-              <select id="filterKelasGrafik" onchange="onFilterKelasGrafikChange()" class="px-3 py-1.5 border rounded-lg text-xs font-bold bg-white border-slate-300 outline-none">
-              </select>
-            </div>
-            <div class="flex-1 md:flex-none">
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Pilih Santri:</label>
-              <select id="selectSiswaGrafik" onchange="renderGrafikTab()" class="w-full md:w-64 px-3 py-1.5 border rounded-lg text-xs md:text-sm font-semibold bg-white border-slate-300 outline-none">
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Mata Pelajaran:</label>
-              <select id="selectMapelChart" onchange="renderGrafikTab()" class="px-3 py-1.5 border rounded-lg text-xs font-bold bg-white text-indigo-900 border-indigo-200 focus:ring-2 focus:ring-indigo-500 outline-none">
-              </select>
-            </div>
+    <!-- TAB 4: GRAFIK -->
+    <section id="tab-grafikSiswa" class="hidden space-y-4">
+      <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Filter Kelas</label>
+            <select id="filterKelasGrafik" onchange="onFilterKelasGrafikChange()" class="w-full px-3 py-1.5 border rounded-lg text-xs font-bold bg-white outline-none">
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Pilih Santri</label>
+            <select id="selectSiswaGrafik" onchange="renderGrafikTab()" class="w-full px-3 py-1.5 border rounded-lg text-xs font-semibold bg-white outline-none">
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mata Pelajaran</label>
+            <select id="selectMapelChart" onchange="renderGrafikTab()" class="w-full px-3 py-1.5 border rounded-lg text-xs font-bold bg-white text-indigo-900 border-indigo-200 outline-none">
+            </select>
           </div>
         </div>
       </div>
 
-      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 space-y-3">
-        <div class="flex flex-wrap justify-between items-center border-b pb-3 gap-2">
-          <h3 class="font-bold text-indigo-900 text-sm md:text-base flex items-center">
-            <i class="fa-solid fa-chart-line text-emerald-600 mr-2"></i> Grafik Perkembangan Nilai Santri (Kelas 7 s/d Kelas 9)
-          </h3>
-          <span class="text-xs text-slate-400 font-medium">Tren Peningkatan Nilai Per Semester</span>
-        </div>
-        <div class="h-72 relative">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+        <h3 class="font-bold text-indigo-900 text-xs sm:text-sm flex items-center">
+          <i class="fa-solid fa-chart-line text-emerald-600 mr-2"></i> Grafik Perkembangan Nilai Santri
+        </h3>
+        <div class="h-64 sm:h-72 relative">
           <canvas id="chartProgression"></canvas>
         </div>
       </div>
@@ -344,33 +322,33 @@
 
     <!-- TAB 5: PENGATURAN -->
     <section id="tab-pengaturan" class="hidden space-y-4">
-      <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 max-w-2xl mx-auto space-y-4">
-        <h3 class="font-bold text-indigo-900 border-b pb-2 flex items-center"><i class="fa-solid fa-sliders mr-2"></i> Pengaturan Bobot Penilaian</h3>
-        <form id="formSettings" onsubmit="handleSaveSettings(event)" class="space-y-4 text-sm">
-          <div class="grid grid-cols-2 gap-4">
+      <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 max-w-xl mx-auto space-y-4">
+        <h3 class="font-bold text-indigo-900 border-b pb-2 flex items-center text-sm"><i class="fa-solid fa-sliders mr-2"></i> Pengaturan Bobot Penilaian</h3>
+        <form id="formSettings" onsubmit="handleSaveSettings(event)" class="space-y-3 text-xs">
+          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Bobot Pengetahuan (%)</label>
+              <label class="block font-semibold text-slate-600 mb-1">Bobot Pengetahuan (%)</label>
               <input type="number" id="setBobotP" value="30" required class="w-full px-3 py-2 border rounded-lg outline-none">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Bobot Keterampilan (%)</label>
+              <label class="block font-semibold text-slate-600 mb-1">Bobot Keterampilan (%)</label>
               <input type="number" id="setBobotK" value="30" required class="w-full px-3 py-2 border rounded-lg outline-none">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Bobot UTS (%)</label>
+              <label class="block font-semibold text-slate-600 mb-1">Bobot UTS (%)</label>
               <input type="number" id="setBobotUTS" value="20" required class="w-full px-3 py-2 border rounded-lg outline-none">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Bobot UAP (%)</label>
+              <label class="block font-semibold text-slate-600 mb-1">Bobot UAP (%)</label>
               <input type="number" id="setBobotUAP" value="20" required class="w-full px-3 py-2 border rounded-lg outline-none">
             </div>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Instansi / Sekolah</label>
+            <label class="block font-semibold text-slate-600 mb-1">Nama Instansi / Sekolah</label>
             <input type="text" id="setNamaSekolah" value="SMP AL-FATHONAH ARJASARI" required class="w-full px-3 py-2 border rounded-lg outline-none">
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun Pelajaran</label>
+            <label class="block font-semibold text-slate-600 mb-1">Tahun Pelajaran</label>
             <input type="text" id="setTahunPelajaran" value="2025-2026" required class="w-full px-3 py-2 border rounded-lg outline-none">
           </div>
           <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg shadow transition">
@@ -382,12 +360,13 @@
 
   </main>
 
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around py-2 z-50 text-slate-600">
+  <!-- NAVIGASI MOBILE BAWAH -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around py-2 z-40 text-slate-600 shadow-lg">
     <button onclick="switchTab('dashboard')" class="flex flex-col items-center text-[10px] focus:text-indigo-600">
       <i class="fa-solid fa-chart-pie text-base mb-0.5"></i> Dashboard
     </button>
     <button onclick="switchTab('inputNilai')" class="flex flex-col items-center text-[10px] focus:text-indigo-600">
-      <i class="fa-solid fa-pen-to-square text-base mb-0.5"></i> Input Nilai
+      <i class="fa-solid fa-pen-to-square text-base mb-0.5"></i> Input
     </button>
     <button onclick="switchTab('raporSiswa')" class="flex flex-col items-center text-[10px] focus:text-indigo-600">
       <i class="fa-solid fa-file-invoice text-base mb-0.5"></i> Rapor
@@ -402,26 +381,36 @@
 
   <!-- JAVASCRIPT LOGIC CLIENT-SIDE FETCH API -->
   <script>
-    // MASUKKAN URL WEB APP APPS SCRIPT ANDA DI SINI
-    const API_URL = "https://script.google.com/macros/s/AKfycbxmWZ6yHxKqFRcIw6akSmNxxkfdejtXWs5-uz3vtKjclJ3IAJaCFOUFIRAMBFXR19Ih_Q/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbwiLmpzCYQQN5J371TUDVkync1E1hNkAanSnXRG_1q_V12K6wChWqm-gdGPaZu8PQl-sg/exec";
 
     let appData = { siswa: [], settings: {}, nilai: [], listMapel: [], listKelas: [] };
     let myProgressionChart = null;
+    let isCardView = false;
 
     window.onload = function() {
       loadInitialData();
     };
 
+    function showLoading(txt) {
+      document.getElementById('loadingText').innerText = txt || 'Memproses data...';
+      document.getElementById('loadingOverlay').classList.remove('hidden');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+
     function apiCall(action, payload = null) {
+      showLoading(payload ? 'Menyimpan data...' : 'Memuat data...');
       if (payload) {
         return fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({ action: action, payload: payload })
-        }).then(res => res.json());
+        }).then(res => res.json()).finally(() => hideLoading());
       } else {
         return fetch(API_URL + '?action=' + action)
-          .then(res => res.json());
+          .then(res => res.json()).finally(() => hideLoading());
       }
     }
 
@@ -447,11 +436,36 @@
       });
       document.getElementById('tab-' + tabId).classList.remove('hidden');
       
+      const fab = document.getElementById('fabSaveGrades');
+      if (tabId === 'inputNilai') {
+        fab.classList.remove('hidden');
+      } else {
+        fab.classList.add('hidden');
+      }
+
       if (tabId === 'raporSiswa') {
         renderIndividualReport();
       } else if (tabId === 'grafikSiswa') {
         renderGrafikTab();
       }
+    }
+
+    function toggleInputView() {
+      isCardView = !isCardView;
+      const btn = document.getElementById('btnToggleView');
+      const containerTable = document.getElementById('containerTableView');
+      const containerCard = document.getElementById('containerCardView');
+
+      if (isCardView) {
+        btn.innerHTML = '<i class="fa-solid fa-table-cells mr-1"></i> Mode Tabel';
+        containerTable.classList.add('hidden');
+        containerCard.classList.remove('hidden');
+      } else {
+        btn.innerHTML = '<i class="fa-solid fa-list-check mr-1"></i> Mode Kartu';
+        containerTable.classList.remove('hidden');
+        containerCard.classList.add('hidden');
+      }
+      renderNilaiTable();
     }
 
     function populateDropdownOptions() {
@@ -506,7 +520,9 @@
 
     function renderNilaiTable() {
       const tbody = document.getElementById('tblNilaiBody');
+      const cardContainer = document.getElementById('containerCardView');
       tbody.innerHTML = '';
+      cardContainer.innerHTML = '';
 
       const currentMapel = document.getElementById('filterMapel').value || (appData.listMapel[0] || 'Informatika');
       const currentKelas = document.getElementById('filterKelas').value || (appData.listKelas[0] || '7A');
@@ -519,6 +535,7 @@
 
       if (filteredSiswa.length === 0) {
         tbody.innerHTML = `<tr><td colspan="25" class="p-4 text-center text-slate-400 font-medium">Belum ada santri terdaftar di Kelas ${currentKelas}.</td></tr>`;
+        cardContainer.innerHTML = `<div class="p-4 text-center text-slate-400 font-medium">Belum ada santri terdaftar di Kelas ${currentKelas}.</div>`;
         return;
       }
 
@@ -527,14 +544,15 @@
         const pVals = existing.p || Array(8).fill('');
         const kVals = existing.k || Array(8).fill('');
 
+        // RENDER MODE TABEL
         let pInputs = '';
         for(let i=0; i<8; i++) {
-          pInputs += `<td class="border p-0.5 min-w-[42px]"><input type="number" min="0" max="100" class="w-full text-center text-xs py-1.5 px-0.5 outline-none font-semibold focus:bg-indigo-50 focus:ring-1 focus:ring-indigo-400 p-val-${s.id}" value="${pVals[i] !== undefined && pVals[i] !== null ? pVals[i] : ''}" oninput="calcRow('${s.id}')"></td>`;
+          pInputs += `<td class="border p-0.5"><input type="number" min="0" max="100" class="w-full text-center text-xs py-1 px-0.5 outline-none font-semibold focus:bg-indigo-50 p-val-${s.id}" value="${pVals[i] !== undefined && pVals[i] !== null ? pVals[i] : ''}" oninput="calcRow('${s.id}')"></td>`;
         }
 
         let kInputs = '';
         for(let i=0; i<8; i++) {
-          kInputs += `<td class="border p-0.5 min-w-[42px]"><input type="number" min="0" max="100" class="w-full text-center text-xs py-1.5 px-0.5 outline-none font-semibold focus:bg-teal-50 focus:ring-1 focus:ring-teal-400 k-val-${s.id}" value="${kVals[i] !== undefined && kVals[i] !== null ? kVals[i] : ''}" oninput="calcRow('${s.id}')"></td>`;
+          kInputs += `<td class="border p-0.5"><input type="number" min="0" max="100" class="w-full text-center text-xs py-1 px-0.5 outline-none font-semibold focus:bg-teal-50 k-val-${s.id}" value="${kVals[i] !== undefined && kVals[i] !== null ? kVals[i] : ''}" oninput="calcRow('${s.id}')"></td>`;
         }
 
         tbody.innerHTML += `
@@ -545,14 +563,74 @@
             ${pInputs}${kInputs}
             <td class="border p-1 bg-indigo-50 font-bold" id="rataP-${s.id}">${existing.rataP || '0'}</td>
             <td class="border p-1 bg-teal-50 font-bold" id="rataK-${s.id}">${existing.rataK || '0'}</td>
-            <td class="border p-0.5 min-w-[50px]"><input type="number" min="0" max="100" id="uts-${s.id}" class="w-full text-center text-xs py-1.5 px-0.5 outline-none font-bold focus:bg-yellow-50 focus:ring-1 focus:ring-amber-400" value="${existing.uts !== undefined && existing.uts !== null ? existing.uts : ''}" oninput="calcRow('${s.id}')"></td>
-            <td class="border p-0.5 min-w-[50px]"><input type="number" min="0" max="100" id="uap-${s.id}" class="w-full text-center text-xs py-1.5 px-0.5 outline-none font-bold focus:bg-yellow-50 focus:ring-1 focus:ring-amber-400" value="${existing.uap !== undefined && existing.uap !== null ? existing.uap : ''}" oninput="calcRow('${s.id}')"></td>
-            <td class="border p-1 bg-yellow-100 font-extrabold text-indigo-900" id="raport-${s.id}">${existing.nilaiRaport || '0'}</td>
-            <td class="border p-1 bg-yellow-200 font-extrabold" id="predikat-${s.id}">${existing.predikat || '-'}</td>
+            <td class="border p-0.5 min-w-[45px]"><input type="number" min="0" max="100" id="uts-${s.id}" class="w-full text-center text-xs py-1 px-0.5 outline-none font-bold" value="${existing.uts !== undefined && existing.uts !== null ? existing.uts : ''}" oninput="calcRow('${s.id}')"></td>
+            <td class="border p-0.5 min-w-[45px]"><input type="number" min="0" max="100" id="uap-${s.id}" class="w-full text-center text-xs py-1 px-0.5 outline-none font-bold" value="${existing.uap !== undefined && existing.uap !== null ? existing.uap : ''}" oninput="calcRow('${s.id}')"></td>
+            <td class="border p-1 bg-amber-100 font-extrabold text-indigo-900" id="raport-${s.id}">${existing.nilaiRaport || '0'}</td>
+            <td class="border p-1 bg-amber-200 font-extrabold" id="predikat-${s.id}">${existing.predikat || '-'}</td>
           </tr>
         `;
+
+        // RENDER MODE KARTU MOBILE
+        let pInputsCard = '';
+        for(let i=0; i<8; i++) {
+          pInputsCard += `<input type="number" min="0" max="100" placeholder="P${i+1}" class="border rounded p-1 text-center text-xs outline-none p-val-card-${s.id}" value="${pVals[i] !== undefined && pVals[i] !== null ? pVals[i] : ''}" oninput="syncCardToTable('${s.id}', ${i}, 'p')">`;
+        }
+
+        let kInputsCard = '';
+        for(let i=0; i<8; i++) {
+          kInputsCard += `<input type="number" min="0" max="100" placeholder="K${i+1}" class="border rounded p-1 text-center text-xs outline-none k-val-card-${s.id}" value="${kVals[i] !== undefined && kVals[i] !== null ? kVals[i] : ''}" oninput="syncCardToTable('${s.id}', ${i}, 'k')">`;
+        }
+
+        cardContainer.innerHTML += `
+          <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm space-y-2">
+            <div class="flex justify-between items-center border-b pb-2">
+              <span class="font-bold text-slate-800 text-xs">${idx + 1}. ${s.nama} (${s.gender})</span>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-amber-100 text-indigo-900">Rapor: <b id="raport-card-${s.id}">${existing.nilaiRaport || '0'}</b> (<b id="predikat-card-${s.id}">${existing.predikat || '-'}</b>)</span>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-indigo-700 uppercase mb-1">Nilai Pengetahuan (P1 - P8)</p>
+              <div class="grid grid-cols-4 gap-1.5">${pInputsCard}</div>
+            </div>
+            <div>
+              <p class="text-[10px] font-bold text-teal-700 uppercase mb-1">Nilai Keterampilan (K1 - K8)</p>
+              <div class="grid grid-cols-4 gap-1.5">${kInputsCard}</div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-1 border-t">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500">Nilai UTS</label>
+                <input type="number" min="0" max="100" id="uts-card-${s.id}" class="w-full border rounded p-1 text-center text-xs font-bold" value="${existing.uts !== undefined && existing.uts !== null ? existing.uts : ''}" oninput="syncCardToTable('${s.id}', 0, 'uts')">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500">Nilai UAP</label>
+                <input type="number" min="0" max="100" id="uap-card-${s.id}" class="w-full border rounded p-1 text-center text-xs font-bold" value="${existing.uap !== undefined && existing.uap !== null ? existing.uap : ''}" oninput="syncCardToTable('${s.id}', 0, 'uap')">
+              </div>
+            </div>
+          </div>
+        `;
+
         calcRow(s.id);
       });
+    }
+
+    function syncCardToTable(studentId, idx, type) {
+      if (type === 'p') {
+        const cards = document.querySelectorAll(`.p-val-card-${studentId}`);
+        const tbls = document.querySelectorAll(`.p-val-${studentId}`);
+        if (cards[idx] && tbls[idx]) tbls[idx].value = cards[idx].value;
+      } else if (type === 'k') {
+        const cards = document.querySelectorAll(`.k-val-card-${studentId}`);
+        const tbls = document.querySelectorAll(`.k-val-${studentId}`);
+        if (cards[idx] && tbls[idx]) tbls[idx].value = cards[idx].value;
+      } else if (type === 'uts') {
+        const cardUts = document.getElementById(`uts-card-${studentId}`);
+        const tblUts = document.getElementById(`uts-${studentId}`);
+        if (cardUts && tblUts) tblUts.value = cardUts.value;
+      } else if (type === 'uap') {
+        const cardUap = document.getElementById(`uap-card-${studentId}`);
+        const tblUap = document.getElementById(`uap-${studentId}`);
+        if (cardUap && tblUap) tblUap.value = cardUap.value;
+      }
+      calcRow(studentId);
     }
 
     function calcRow(studentId) {
@@ -563,7 +641,8 @@
         if(!isNaN(v)) { pSum += v; pCount++; }
       });
       let rataP = pCount > 0 ? (pSum / pCount) : 0;
-      document.getElementById(`rataP-${studentId}`).innerText = rataP.toFixed(1);
+      const elRataP = document.getElementById(`rataP-${studentId}`);
+      if (elRataP) elRataP.innerText = rataP.toFixed(1);
 
       const kElements = document.querySelectorAll(`.k-val-${studentId}`);
       let kSum = 0, kCount = 0;
@@ -572,10 +651,11 @@
         if(!isNaN(v)) { kSum += v; kCount++; }
       });
       let rataK = kCount > 0 ? (kSum / kCount) : 0;
-      document.getElementById(`rataK-${studentId}`).innerText = rataK.toFixed(1);
+      const elRataK = document.getElementById(`rataK-${studentId}`);
+      if (elRataK) elRataK.innerText = rataK.toFixed(1);
 
-      let uts = parseFloat(document.getElementById(`uts-${studentId}`).value) || 0;
-      let uap = parseFloat(document.getElementById(`uap-${studentId}`).value) || 0;
+      let uts = parseFloat(document.getElementById(`uts-${studentId}`)?.value) || 0;
+      let uap = parseFloat(document.getElementById(`uap-${studentId}`)?.value) || 0;
 
       let bP = (parseFloat(appData.settings.bobotP) || 30) / 100;
       let bK = (parseFloat(appData.settings.bobotK) || 30) / 100;
@@ -584,14 +664,21 @@
 
       let totalNilai = (rataP * bP) + (rataK * bK) + (uts * bUTS) + (uap * bUAP);
       let roundedRaport = Math.round(totalNilai);
-      document.getElementById(`raport-${studentId}`).innerText = roundedRaport;
+      
+      const elRap = document.getElementById(`raport-${studentId}`);
+      if (elRap) elRap.innerText = roundedRaport;
+      const elRapCard = document.getElementById(`raport-card-${studentId}`);
+      if (elRapCard) elRapCard.innerText = roundedRaport;
 
       let predikat = 'D';
       if (roundedRaport >= 90) predikat = 'A';
       else if (roundedRaport >= 80) predikat = 'B';
       else if (roundedRaport >= 70) predikat = 'C';
 
-      document.getElementById(`predikat-${studentId}`).innerText = predikat;
+      const elPred = document.getElementById(`predikat-${studentId}`);
+      if (elPred) elPred.innerText = predikat;
+      const elPredCard = document.getElementById(`predikat-card-${studentId}`);
+      if (elPredCard) elPredCard.innerText = predikat;
     }
 
     function saveAllGradesToServer() {
@@ -611,12 +698,12 @@
           idSiswa: s.id,
           p: pVals,
           k: kVals,
-          rataP: document.getElementById(`rataP-${s.id}`).innerText,
-          rataK: document.getElementById(`rataK-${s.id}`).innerText,
-          uts: document.getElementById(`uts-${s.id}`).value,
-          uap: document.getElementById(`uap-${s.id}`).value,
-          nilaiRaport: document.getElementById(`raport-${s.id}`).innerText,
-          predikat: document.getElementById(`predikat-${s.id}`).innerText
+          rataP: document.getElementById(`rataP-${s.id}`)?.innerText || '0',
+          rataK: document.getElementById(`rataK-${s.id}`)?.innerText || '0',
+          uts: document.getElementById(`uts-${s.id}`)?.value || '',
+          uap: document.getElementById(`uap-${s.id}`)?.value || '',
+          nilaiRaport: document.getElementById(`raport-${s.id}`)?.innerText || '0',
+          predikat: document.getElementById(`predikat-${s.id}`)?.innerText || '-'
         });
       });
 
@@ -687,7 +774,7 @@
               <td class="p-2 border">${n.uts}</td>
               <td class="p-2 border">${n.uap}</td>
               <td class="p-2 border font-bold text-indigo-900 bg-indigo-50">${n.nilaiRaport}</td>
-              <td class="p-2 border font-bold bg-yellow-50">${n.predikat}</td>
+              <td class="p-2 border font-bold bg-amber-50">${n.predikat}</td>
             </tr>
           `;
         });
@@ -764,10 +851,10 @@
             data: chartData,
             borderColor: '#059669',
             backgroundColor: 'rgba(5, 150, 105, 0.1)',
-            borderWidth: 3,
+            borderWidth: 2.5,
             fill: true,
             tension: 0.3,
-            pointRadius: 6,
+            pointRadius: 5,
             pointBackgroundColor: '#047857'
           }]
         },
@@ -794,6 +881,15 @@
         document.getElementById('formSiswa').reset();
         loadInitialData();
       });
+    }
+
+    function deleteStudent(id, nama) {
+      if (confirm(`Apakah Anda yakin ingin menghapus santri "${nama}"?`)) {
+        apiCall('deleteStudent', { id: id }).then(res => {
+          alert(res.message);
+          loadInitialData();
+        });
+      }
     }
 
     function handleSaveSettings(e) {
@@ -830,14 +926,28 @@
     function renderSiswaTable() {
       const tbody = document.getElementById('tblSiswaBody');
       tbody.innerHTML = '';
-      appData.siswa.forEach((s, idx) => {
+      const query = (document.getElementById('searchSiswa')?.value || '').toLowerCase();
+      
+      const filtered = appData.siswa.filter(s => s.nama.toLowerCase().includes(query) || s.id.toLowerCase().includes(query));
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-slate-400 font-medium">Data santri tidak ditemukan.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach((s, idx) => {
         tbody.innerHTML += `
           <tr class="hover:bg-slate-50 border-b">
-            <td class="p-2 border text-center">${idx + 1}</td>
+            <td class="p-2 border text-center font-medium">${idx + 1}</td>
             <td class="p-2 border font-mono text-xs">${s.id}</td>
             <td class="p-2 border font-semibold">${s.nama}</td>
             <td class="p-2 border text-center">${s.gender}</td>
             <td class="p-2 border text-center font-bold text-indigo-700">${s.kelas}</td>
+            <td class="p-2 border text-center">
+              <button onclick="deleteStudent('${s.id}', '${s.nama}')" class="text-rose-600 hover:text-rose-800 p-1">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </td>
           </tr>`;
       });
     }
