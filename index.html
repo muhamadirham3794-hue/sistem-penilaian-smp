@@ -682,66 +682,58 @@
     }
 
     function saveAllGradesToServer() {
-      const currentMapel = document.getElementById('filterMapel').value;
-      const currentKelas = document.getElementById('filterKelas').value;
-      const currentSem = document.getElementById('filterSemester').value;
+  const currentMapel = document.getElementById('filterMapel').value;
+  const currentKelas = document.getElementById('filterKelas').value;
+  const currentSem = document.getElementById('filterSemester').value;
 
-      const filteredSiswa = appData.siswa.filter(s => s.kelas === currentKelas);
+  const filteredSiswa = appData.siswa.filter(s => s.kelas === currentKelas);
 
-      let gradesPayload = [];
-      filteredSiswa.forEach(s => {
-        let pVals = [], kVals = [];
-        document.querySelectorAll(`.p-val-${s.id}`).forEach(el => pVals.push(el.value));
-        document.querySelectorAll(`.k-val-${s.id}`).forEach(el => kVals.push(el.value));
+  let gradesPayload = [];
+  filteredSiswa.forEach(s => {
+    let pVals = [], kVals = [];
+    document.querySelectorAll(`.p-val-${s.id}`).forEach(el => pVals.push(el.value));
+    document.querySelectorAll(`.k-val-${s.id}`).forEach(el => kVals.push(el.value));
 
-        gradesPayload.push({
-          idSiswa: s.id,
-          p: pVals,
-          k: kVals,
-          rataP: document.getElementById(`rataP-${s.id}`)?.innerText || '0',
-          rataK: document.getElementById(`rataK-${s.id}`)?.innerText || '0',
-          uts: document.getElementById(`uts-${s.id}`)?.value || '',
-          uap: document.getElementById(`uap-${s.id}`)?.value || '',
-          nilaiRaport: document.getElementById(`raport-${s.id}`)?.innerText || '0',
-          predikat: document.getElementById(`predikat-${s.id}`)?.innerText || '-'
-        });
-      });
+    let utsVal = document.getElementById(`uts-${s.id}`)?.value || '';
+    let uapVal = document.getElementById(`uap-${s.id}`)?.value || '';
 
-      apiCall('saveAllGrades', { mapel: currentMapel, kelas: currentKelas, semester: currentSem, grades: gradesPayload })
-        .then(res => {
-          alert(res.message);
-          if (res.updatedNilai) {
-            appData.nilai = res.updatedNilai;
-          }
-          renderNilaiTable();
-        });
-    }
+    // Periksa apakah ada setidaknya satu kolom nilai yang terisi
+    let hasAnyValue = pVals.some(v => v !== '' && v !== null && v !== undefined) || 
+                      kVals.some(v => v !== '' && v !== null && v !== undefined) || 
+                      utsVal !== '' || 
+                      uapVal !== '';
 
-    function onFilterKelasRaporChange() {
-      populateReportSiswaOptions();
-      renderIndividualReport();
-    }
-
-    function populateReportSiswaOptions() {
-      const select = document.getElementById('selectSiswaReport');
-      select.innerHTML = '';
-
-      const filterKelas = document.getElementById('filterKelasRapor').value;
-      let list = appData.siswa;
-
-      if (filterKelas !== 'ALL') {
-        list = appData.siswa.filter(s => s.kelas === filterKelas);
-      }
-
-      if(list.length === 0) {
-        select.innerHTML = '<option value="">Tidak ada santri</option>';
-        return;
-      }
-
-      list.forEach(s => {
-        select.innerHTML += `<option value="${s.id}">${s.nama} (${s.kelas})</option>`;
+    // Hanya masukkan ke payload jika santri memiliki nilai yang diisi
+    if (hasAnyValue) {
+      gradesPayload.push({
+        idSiswa: s.id,
+        p: pVals,
+        k: kVals,
+        rataP: document.getElementById(`rataP-${s.id}`)?.innerText || '0',
+        rataK: document.getElementById(`rataK-${s.id}`)?.innerText || '0',
+        uts: utsVal,
+        uap: uapVal,
+        nilaiRaport: document.getElementById(`raport-${s.id}`)?.innerText || '0',
+        predikat: document.getElementById(`predikat-${s.id}`)?.innerText || '-'
       });
     }
+  });
+
+  // Jika tidak ada satu pun nilai yang diisi pada tabel/kartu
+  if (gradesPayload.length === 0) {
+    alert("Tidak ada nilai yang diisi! Silakan masukkan minimal satu nilai santri terlebih dahulu.");
+    return;
+  }
+
+  apiCall('saveAllGrades', { mapel: currentMapel, kelas: currentKelas, semester: currentSem, grades: gradesPayload })
+    .then(res => {
+      alert(res.message);
+      if (res.updatedNilai) {
+        appData.nilai = res.updatedNilai;
+      }
+      renderNilaiTable();
+    });
+}
 
     function renderIndividualReport() {
       const idSiswa = document.getElementById('selectSiswaReport').value;
