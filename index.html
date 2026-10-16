@@ -381,7 +381,7 @@
 
   <!-- JAVASCRIPT LOGIC CLIENT-SIDE FETCH API -->
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxbMYlbsbNfK5BsQrc_DpQ8UJSM5WL5J9CEEnpFMG7UEn90mGfnZU16zWiVZqNK3rs9Gw/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbxawhKp7Sg80aIEngNDNq4PHox55UIcN79Dzgz9jy0fLYpn8nw-1NvLPASdzatuzADF3Q/exec";
 
     let appData = { siswa: [], settings: {}, nilai: [], listMapel: [], listKelas: [] };
     let myProgressionChart = null;
@@ -716,7 +716,33 @@
           renderNilaiTable();
         });
     }
-    
+
+    function onFilterKelasRaporChange() {
+      populateReportSiswaOptions();
+      renderIndividualReport();
+    }
+
+    function populateReportSiswaOptions() {
+      const select = document.getElementById('selectSiswaReport');
+      select.innerHTML = '';
+
+      const filterKelas = document.getElementById('filterKelasRapor').value;
+      let list = appData.siswa;
+
+      if (filterKelas !== 'ALL') {
+        list = appData.siswa.filter(s => s.kelas === filterKelas);
+      }
+
+      if(list.length === 0) {
+        select.innerHTML = '<option value="">Tidak ada santri</option>';
+        return;
+      }
+
+      list.forEach(s => {
+        select.innerHTML += `<option value="${s.id}">${s.nama} (${s.kelas})</option>`;
+      });
+    }
+
     function renderIndividualReport() {
       const idSiswa = document.getElementById('selectSiswaReport').value;
       const siswa = appData.siswa.find(s => s.id === idSiswa);
